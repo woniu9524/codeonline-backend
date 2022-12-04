@@ -36,6 +36,7 @@
         <jjwt.version>0.9.1</jjwt.version>
         <minio.version>8.2.2</minio.version>
         <poi.version>4.1.2</poi.version>
+        <k8s-client.version>16.0.2</k8s-client.version>
         <commons-collections.version>3.2.2</commons-collections.version>
         <transmittable-thread-local.version>2.13.2</transmittable-thread-local.version>
     </properties>
@@ -158,6 +159,13 @@
                 <groupId>io.jsonwebtoken</groupId>
                 <artifactId>jjwt</artifactId>
                 <version>${jjwt.version}</version>
+            </dependency>
+
+            <!-- k8s client -->
+            <dependency>
+                <groupId>io.kubernetes</groupId>
+                <artifactId>client-java</artifactId>
+                <version>${k8s-client.version}</version>
             </dependency>
 
             <!-- 线程传递值 -->
