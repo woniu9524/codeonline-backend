@@ -23,6 +23,7 @@ spring:
         # 共享配置
         shared-configs:
           - application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+        namespace: d547c9a7-a1c7-4a31-a9ed-a2ab36d94e50
 ## mybatis配置
 #mybatis:
 #  # 搜索指定包别名
