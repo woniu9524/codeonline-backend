@@ -31,7 +31,7 @@ spec:
             type: ''
       containers:
         - name: container-codeonline-auth
-          image: '10.135.228.225:30002/codeonline-dev/codeonlie-auth:1.0.0'
+          image: '$REGISTRY/$HARBOR_NAMESPACE/codeonlie-auth:$ImageTag'
           ports:
             - name: tcp-8080
               containerPort: 8080
