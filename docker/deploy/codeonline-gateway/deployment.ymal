@@ -31,7 +31,7 @@ spec:
             type: ''
       containers:
         - name: container-lobp1k
-          image: '$REGISTRY/$HARBOR_NAMESPACE/codeonlie-gateway:$ImageTag'
+          image: '192.163.3.77:30002/codeonline-dev/codeonlie-gateway:1.0.0'
           ports:
             - name: tcp-8080
               containerPort: 8080

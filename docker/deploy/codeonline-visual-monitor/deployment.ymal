@@ -31,7 +31,7 @@ spec:
             type: ''
       containers:
         - name: container-visual-monitor
-          image: '$REGISTRY/$HARBOR_NAMESPACE/codeonlie-visual-monitor:$ImageTag'
+          image: '192.163.3.77:30002/codeonline-dev/codeonlie-visual-monitor:1.0.0'
           ports:
             - name: tcp-8080
               containerPort: 8080

@@ -31,7 +31,7 @@ spec:
             type: ''
       containers:
         - name: container-ud7vxq
-          image: '$REGISTRY/$HARBOR_NAMESPACE/codeonlie-modules-system:$ImageTag'
+          image: '192.163.3.77:30002/codeonline-dev/codeonlie-modules-system:1.0.0'
           ports:
             - name: tcp-8080
               containerPort: 8080

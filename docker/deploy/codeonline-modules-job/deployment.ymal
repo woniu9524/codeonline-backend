@@ -31,7 +31,7 @@ spec:
             type: ''
       containers:
         - name: container-modules-job
-          image: '$REGISTRY/$HARBOR_NAMESPACE/codeonlie-modules-job:$ImageTag'
+          image: '192.163.3.77:30002/codeonline-dev/codeonlie-modules-job:1.0.0'
           ports:
             - name: tcp-8080
               containerPort: 8080
