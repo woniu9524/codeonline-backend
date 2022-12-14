@@ -31,7 +31,7 @@ spec:
             type: ''
       containers:
         - name: container-modules-file
-          image: '192.163.3.77:30002/codeonline-dev/codeonlie-modules-file:1.0.0'
+          image: '192.168.3.77:30002/codeonline-dev/codeonlie-modules-file:1.0.0'
           ports:
             - name: tcp-8080
               containerPort: 8080
