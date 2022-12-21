@@ -1,5 +1,8 @@
 package com.codeonline.system;
 
+import io.fabric8.kubernetes.api.model.NamespaceList;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.codeonline.common.security.annotation.EnableCustomConfig;
@@ -30,5 +33,8 @@ public class RuoYiSystemApplication
                 " |  | \\ `'   /|   `-'  /           \n" +
                 " |  |  \\    /  \\      /           \n" +
                 " ''-'   `'-'    `-..-'              ");
+        KubernetesClient client = new KubernetesClientBuilder().build();
+        NamespaceList myNs = client.namespaces().list();
+        System.out.println(myNs);
     }
 }
