@@ -78,6 +78,12 @@
             <artifactId>codeonline-common-swagger</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.fabric8</groupId>
+            <artifactId>kubernetes-client</artifactId>
+            <version>6.3.1</version>
+        </dependency>
+
     </dependencies>
 
     <build>

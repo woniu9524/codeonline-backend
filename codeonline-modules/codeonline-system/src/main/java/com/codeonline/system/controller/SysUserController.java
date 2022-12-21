@@ -5,6 +5,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
+
+import io.fabric8.kubernetes.api.model.NamespaceList;
+import io.fabric8.kubernetes.client.KubernetesClient;
+import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -327,5 +331,15 @@ public class SysUserController extends BaseController
     public AjaxResult deptTree(SysDept dept)
     {
         return AjaxResult.success(deptService.selectDeptTreeList(dept));
+    }
+
+    /*
+    * 测试
+    * */
+    @GetMapping("/test")
+    public AjaxResult test(){
+        KubernetesClient client = new KubernetesClientBuilder().build();
+        NamespaceList myNs = client.namespaces().list();
+        return AjaxResult.success(myNs.toString());
     }
 }
