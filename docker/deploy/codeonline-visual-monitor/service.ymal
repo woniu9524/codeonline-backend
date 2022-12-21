@@ -15,6 +15,7 @@ spec:
       protocol: TCP
       port: 8080
       targetPort: 8080
+      nodePort: 31620
   selector:
     app: codeonlie-visual-monitor
   clusterIP: 10.233.49.62
