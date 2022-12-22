@@ -1,30 +1,24 @@
-package com.codeonline.system;
+package com.codeonline;
 
-
-import io.fabric8.kubernetes.api.model.NamespaceList;
-import io.fabric8.kubernetes.client.KubernetesClient;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
 import com.codeonline.common.security.annotation.EnableCustomConfig;
 import com.codeonline.common.security.annotation.EnableRyFeignClients;
 import com.codeonline.common.swagger.annotation.EnableCustomSwagger2;
+import com.codeonline.shell.ShellMan;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 
 /**
- * 系统模块
- * 
- * @author ruoyi
+ * Hello world!
  */
 @EnableCustomConfig
 @EnableCustomSwagger2
 @EnableRyFeignClients
-@SpringBootApplication
-public class RuoYiSystemApplication
-{
-    public static void main(String[] args)
-    {
-        SpringApplication.run(RuoYiSystemApplication.class, args);
-        System.out.println("(♥◠‿◠)ﾉﾞ  系统模块启动成功   ლ(´ڡ`ლ)ﾞ  \n" +
+@SpringBootApplication(exclude = {DataSourceAutoConfiguration.class})
+public class CodeOnlineHarborApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(CodeOnlineHarborApplication.class, args);
+        System.out.println("(♥◠‿◠)ﾉﾞ  Harbor模块启动成功   ლ(´ڡ`ლ)ﾞ  \n" +
                 " .-------.       ____     __        \n" +
                 " |  _ _   \\      \\   \\   /  /    \n" +
                 " | ( ' )  |       \\  _. /  '       \n" +
