@@ -36,7 +36,7 @@
         <jjwt.version>0.9.1</jjwt.version>
         <minio.version>8.2.2</minio.version>
         <poi.version>4.1.2</poi.version>
-        <k8s-client.version>16.0.2</k8s-client.version>
+        <k8s-client.version>6.3.1</k8s-client.version>
         <commons-collections.version>3.2.2</commons-collections.version>
         <transmittable-thread-local.version>2.13.2</transmittable-thread-local.version>
     </properties>
@@ -163,10 +163,14 @@
 
             <!-- k8s client -->
 <!--            <dependency>-->
-<!--                <groupId>io.kubernetes</groupId>-->
-<!--                <artifactId>client-java</artifactId>-->
-<!--                <version>${k8s-client.version}</version>-->
+<!--                <groupId>io.fabric8</groupId>-->
+<!--                <artifactId>kubernetes-client-bom</artifactId>-->
+<!--                <version>5.10.2</version>-->
+<!--                <type>pom</type>-->
+<!--                <scope>import</scope>-->
 <!--            </dependency>-->
+
+
 
             <!-- 线程传递值 -->
             <dependency>
