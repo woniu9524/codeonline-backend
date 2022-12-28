@@ -1,10 +1,10 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: codeonline-modules-file
+  name: codeonline-modules-harbor
   namespace: code-online
   labels:
-    app: codeonline-modules-file
+    app: codeonline-modules-harbor
     version: v1
   annotations:
     kubesphere.io/creator: admin
@@ -16,10 +16,10 @@ spec:
       port: 8080
       targetPort: 8080
   selector:
-    app: codeonline-modules-file
-  clusterIP: 10.233.38.134
+    app: codeonline-modules-harbor
+  clusterIP: 10.233.40.62
   clusterIPs:
-    - 10.233.38.134
+    - 10.233.40.62
   type: ClusterIP
   sessionAffinity: None
   ipFamilies:
