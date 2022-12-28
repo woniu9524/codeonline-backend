@@ -252,7 +252,7 @@
         <module>codeonline-modules</module>
         <module>codeonline-api</module>
         <module>codeonline-common</module>
-        <module>codeonline-modules/codeonline-harbor</module>
+        <module>codeonline-modules</module>
     </modules>
     <packaging>pom</packaging>
 

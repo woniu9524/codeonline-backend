@@ -1,0 +1,20 @@
+package com.codeonline.harbor.model;
+
+import com.codeonline.common.core.web.domain.BaseEntity;
+import lombok.Data;
+
+@Data
+public class HarborUpload extends BaseEntity {
+
+    private Integer uploadId;
+
+    private long userId;
+
+    private String imageName;
+
+    private String imageTag;
+
+    private String imageUrl;
+
+
+}

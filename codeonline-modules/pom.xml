@@ -13,6 +13,8 @@
         <module>codeonline-gen</module>
         <module>codeonline-job</module>
         <module>codeonline-file</module>
+        <module>codeonline-harbor</module>
+        <module>codeonline-k8s</module>
     </modules>
 
     <artifactId>codeonline-modules</artifactId>
