@@ -61,6 +61,32 @@
             <version>${swagger.fox.version}</version>
         </dependency>
 
+        <!-- RuoYi Common Security-->
+        <dependency>
+            <groupId>com.codeonline</groupId>
+            <artifactId>codeonline-common-security</artifactId>
+        </dependency>
+
+        <!-- Mysql Connector -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+        </dependency>
+
+        <!-- RuoYi Common DataSource -->
+        <dependency>
+            <groupId>com.codeonline</groupId>
+            <artifactId>codeonline-common-datasource</artifactId>
+        </dependency>
+
+        <!-- RuoYi Common DataScope -->
+        <dependency>
+            <groupId>com.codeonline</groupId>
+            <artifactId>codeonline-common-datascope</artifactId>
+        </dependency>
+
+
+
         <!-- shell部分的依赖 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
