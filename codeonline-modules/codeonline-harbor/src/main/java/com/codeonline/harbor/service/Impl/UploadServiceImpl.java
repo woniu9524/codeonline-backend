@@ -2,6 +2,8 @@ package com.codeonline.harbor.service.Impl;
 
 import com.codeonline.common.core.exception.harbor.HarborShellException;
 import com.codeonline.common.core.web.domain.AjaxResult;
+import com.codeonline.harbor.api.RepositoryApi;
+import com.codeonline.harbor.api.model.Repository;
 import com.codeonline.harbor.mapper.HarborUploadMapper;
 import com.codeonline.harbor.model.HarborUpload;
 import com.codeonline.harbor.service.IUploadService;
@@ -12,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 @Service
 public class UploadServiceImpl implements IUploadService {
@@ -23,6 +26,9 @@ public class UploadServiceImpl implements IUploadService {
 
     @Autowired
     private HarborUploadMapper harborUploadMapper;
+
+    @Autowired
+    private RepositoryApi repositoryApi;
 
     @Value("${harbor.harborUrl}")
     private String harborUrl;
@@ -41,21 +47,25 @@ public class UploadServiceImpl implements IUploadService {
         String path = split[1];
         path = BaseUrl + path;
         //TODO 此处假设path为：/root/test/dockerfile123
-        path="/root/test/dockerfile123";
+        path = "/root/test/dockerfile";
         //docker build
-        String dockerfileName = harborUpload.getImageName()+":"+harborUpload.getImageTag();
-        String buildCommand = "docker build -f "+path + " -t "+dockerfileName+" .";
+        String dockerfileName = harborUpload.getImageName() + ":" + harborUpload.getImageTag();
+        String buildCommand = "docker build -f " + path + " -t " + dockerfileName + " .";
         try {
             String buildResult = shellMan.exec(buildCommand);
         } catch (IOException e) {
-            throw new HarborShellException("docker build失败，错误信息："+e.getMessage());
+            throw new HarborShellException("docker build失败，错误信息：" + e.getMessage());
         }
         //docker push
-        pushImage(path,dockerfileName);
-        // 更新数据库
-        harborUploadMapper.insertHarborUpload(harborUpload);
+        pushImage(path, dockerfileName);
+        // 判断是否上传成功
+        if(hasPushed(dockerfileName)){
+            // 更新数据库
+            harborUploadMapper.insertHarborUpload(harborUpload);
+            return AjaxResult.success(path);
+        }
+        return AjaxResult.error("上传失败");
 
-        return AjaxResult.success(path);
     }
 
     @Override
@@ -66,7 +76,7 @@ public class UploadServiceImpl implements IUploadService {
         String path = split[1];
         path = BaseUrl + path;
         //TODO 此处假设path为：/root/test/base-centos.tar
-        path="/root/test/base-centos.tar";
+        path = "/root/test/centos-base-ssh.tar";
 
         // 使用命令的方式，加载镜像，打标签，登录harbor，再推送到harbor中去
         // TODO 此处应该用异步的方式，不然会阻塞
@@ -81,12 +91,16 @@ public class UploadServiceImpl implements IUploadService {
         }
         // 推送镜像
         pushImage(path, sourceImageName);
-        // 更新数据库
-        harborUploadMapper.insertHarborUpload(harborUpload);
-        return AjaxResult.success("推送成功");
+        // 判断是否推送成功
+        if (hasPushed(sourceImageName)) {
+            // 更新数据库
+            harborUploadMapper.insertHarborUpload(harborUpload);
+            return AjaxResult.success("推送成功");
+        }
+        return AjaxResult.error("推送失败");
     }
 
-    public void pushImage(String path,String sourceImageName){
+    public void pushImage(String path, String sourceImageName) {
         // 打标签  SOURCE_IMAGE[:TAG] 192.168.3.77:30002/codeonline-dev/REPOSITORY[:TAG]
         String tagCMD = String.format("docker tag %s %s/%s/%s", sourceImageName, harborUrl, harborSpace, sourceImageName);
         try {
@@ -110,9 +124,7 @@ public class UploadServiceImpl implements IUploadService {
         try {
             String pushResult = shellMan.exec(pushCMD);// digest: sha256
             //判断推送是否成功
-            if (!pushResult.contains("digest: sha256")) {
-                throw new HarborShellException(String.format("推送镜像到harbor失败，命令为:%s，报错信息为%s", pushCMD, pushResult));
-            }
+
         } catch (IOException e) {
             throw new HarborShellException(String.format("推送到harbor失败，命令为:%s，报错信息为%s", pushCMD, e.getMessage()));
         }
@@ -135,5 +147,21 @@ public class UploadServiceImpl implements IUploadService {
         if (file.exists()) {
             file.delete();
         }
+    }
+
+
+    private boolean hasPushed(String sourceImageName) {
+        // 判断是否已经推送过
+        String name = sourceImageName.split(":")[0];
+        String tag = sourceImageName.split(":")[1];
+        Repository repository = repositoryApi.getRepository(name);
+        if (repository == null) {
+            return false;
+        }
+        List<String> repositoryTags = repositoryApi.getRepositoryTags(name);
+
+        return repositoryTags.stream().anyMatch(tag::equals);
+
+
     }
 }

@@ -15,6 +15,7 @@ public class HarborUploadVo {
 
     private String tag;
 
+    private boolean isPublic;
 
     private boolean isDockerfile;
 

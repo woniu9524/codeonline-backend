@@ -86,7 +86,6 @@
         </dependency>
 
 
-
         <!-- shell部分的依赖 -->
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -142,10 +141,19 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <!-- log模块 -->
         <dependency>
             <groupId>com.codeonline</groupId>
             <artifactId>codeonline-common-log</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.8.9</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>

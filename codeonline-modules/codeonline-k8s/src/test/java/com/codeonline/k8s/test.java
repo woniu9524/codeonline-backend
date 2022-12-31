@@ -33,19 +33,14 @@ public class test{
     public void k8sTest() throws IOException {
         KubernetesClient client= new KubernetesClientBuilder().build();
 
-        //list命名空间
-        NamespaceList myNs = client.namespaces().list();
-        System.out.println(myNs);
-        System.out.println("列出命名空间成功");
-
         //创建container
         Container container = new Container();
         container.setName("test-container");
-        container.setImage("192.168.3.77:30002/codeonline-all/base-centos:1.0.0");
+        container.setImage("192.168.3.77:30002/codeonline-all/centos-base-ssh:1.0.0");
         List<ContainerPort> containerPorts = new ArrayList<>();
         ContainerPort containerPort = new ContainerPort();
-        containerPort.setName("tcp-8080");
-        containerPort.setContainerPort(8080);
+        containerPort.setName("tcp-22");
+        containerPort.setContainerPort(22);
         containerPort.setProtocol("TCP");
         containerPorts.add(containerPort);
         container.setPorts(containerPorts);
@@ -73,11 +68,7 @@ public class test{
         //创建Pod
         DeploymentSpec deploymentSpec = new DeploymentSpec();
         deploymentSpec.setSelector(new LabelSelector());
-        deploymentSpec.getSelector().setMatchLabels(new HashMap<>());
-        deploymentSpec.getSelector().getMatchLabels().put("app", "test-deployment");
-        deploymentSpec.getSelector().getMatchLabels().put("teacherID", "10001");
-        deploymentSpec.getSelector().getMatchLabels().put("studentID", "20001");
-        deploymentSpec.getSelector().getMatchLabels().put("labID", "30001");
+        deploymentSpec.getSelector().setMatchLabels(labels);
         deploymentSpec.setReplicas(1);//Pod副本数量
         //创建deployment
         Deployment deployment = new Deployment();
@@ -93,5 +84,43 @@ public class test{
         // 部署
         client.apps().deployments().inNamespace("codeonline-all-pods").create(deployment);
 
+    }
+
+    @Test
+    public void serviceTest() throws IOException {
+        KubernetesClient client= new KubernetesClientBuilder().build();
+        //创建label
+        Map<String, String> labels=new HashMap<>();
+        labels.put("app", "test-deployment");
+        labels.put("teacherID", "10001");
+        labels.put("studentID", "20001");
+        labels.put("labID", "30001");
+
+        //创建Metadata
+        ObjectMeta metadata = new ObjectMeta();
+        metadata.setLabels(new HashMap<>());
+        metadata.getLabels().put("app","base-service");
+        metadata.setName("base-service");
+        metadata.setNamespace("codeonline-all-pods");
+        //创建service
+        Service service = new Service();
+        service.setApiVersion("v1");
+        service.setMetadata(metadata);
+        service.setSpec(new ServiceSpec());
+        service.getSpec().setType("NodePort");
+        service.getSpec().setSelector(labels);
+        service.getSpec().setPorts(new ArrayList<>());
+
+        ServicePort servicePort = new ServicePort();
+        servicePort.setName("tcp-22");
+        servicePort.setPort(22);
+        servicePort.setProtocol("TCP");
+        servicePort.setTargetPort(new IntOrString(22));
+        servicePort.setNodePort(30122);
+
+        service.getSpec().getPorts().add(servicePort);
+        System.out.println(service);
+        //创建service
+        client.services().inNamespace("codeonline-all-pods").create(service);
     }
 }

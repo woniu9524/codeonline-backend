@@ -27,15 +27,3 @@ spring:
     multipart:
       max-file-size: 2048MB
       max-request-size: 2048MB
-
-
-ssh:
-  ipAddr: 192.168.3.77
-  userName: root
-  password: 123456
-  enable: true
-harbor:
-  harborUrl: 192.168.3.77:30002
-  harborName: admin
-  harborPassword: Harbor12345
-  harborSpace: codeonline-all

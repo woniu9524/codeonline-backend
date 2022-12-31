@@ -81,6 +81,7 @@ public class UploadController {
         harborUpload.setImageName(userid +"_"+harborUploadVo.getEnvironmentName());
         harborUpload.setImageTag(harborUploadVo.getTag());
         harborUpload.setImageUrl(url);
+        harborUpload.setPublic(harborUploadVo.isPublic());
         harborUpload.setUserId(userid);
         harborUpload.setCreateBy(username);
         harborUpload.setUpdateBy(username);
