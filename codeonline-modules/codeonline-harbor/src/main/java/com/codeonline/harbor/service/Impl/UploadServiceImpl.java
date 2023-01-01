@@ -62,7 +62,7 @@ public class UploadServiceImpl implements IUploadService {
         if(hasPushed(dockerfileName)){
             // 更新数据库
             harborUploadMapper.insertHarborUpload(harborUpload);
-            return AjaxResult.success(path);
+            return AjaxResult.success("上传成功");
         }
         return AjaxResult.error("上传失败");
 

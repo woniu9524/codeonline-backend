@@ -1,5 +1,6 @@
 package com.codeonline.harbor.vo;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import javax.validation.constraints.NotBlank;
@@ -15,8 +16,10 @@ public class HarborUploadVo {
 
     private String tag;
 
+    @JsonProperty("isPublic")
     private boolean isPublic;
 
+    @JsonProperty("isDockerfile")
     private boolean isDockerfile;
 
     @NotBlank(message = "文件上传出问题了")
