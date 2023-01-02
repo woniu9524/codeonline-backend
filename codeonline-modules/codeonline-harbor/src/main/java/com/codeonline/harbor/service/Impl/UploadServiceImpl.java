@@ -4,6 +4,7 @@ import com.codeonline.common.core.exception.harbor.HarborShellException;
 import com.codeonline.common.core.web.domain.AjaxResult;
 import com.codeonline.harbor.api.RepositoryApi;
 import com.codeonline.harbor.api.model.Repository;
+import com.codeonline.harbor.api.model.ScannerRegistrationReq;
 import com.codeonline.harbor.mapper.HarborUploadMapper;
 import com.codeonline.harbor.model.HarborUpload;
 import com.codeonline.harbor.service.IUploadService;
@@ -47,19 +48,20 @@ public class UploadServiceImpl implements IUploadService {
         String path = split[1];
         path = BaseUrl + path;
         //TODO 此处假设path为：/root/test/dockerfile123
-        path = "/root/test/dockerfile";
+        path = "/root/test/codeServer-dockerfile";
         //docker build
         String dockerfileName = harborUpload.getImageName() + ":" + harborUpload.getImageTag();
         String buildCommand = "docker build -f " + path + " -t " + dockerfileName + " .";
         try {
             String buildResult = shellMan.exec(buildCommand);
+            System.out.println(buildResult);
         } catch (IOException e) {
             throw new HarborShellException("docker build失败，错误信息：" + e.getMessage());
         }
         //docker push
         pushImage(path, dockerfileName);
         // 判断是否上传成功
-        if(hasPushed(dockerfileName)){
+        if (hasPushed(dockerfileName)) {
             // 更新数据库
             harborUploadMapper.insertHarborUpload(harborUpload);
             return AjaxResult.success("上传成功");
@@ -70,7 +72,9 @@ public class UploadServiceImpl implements IUploadService {
 
     @Override
     public AjaxResult loadImageAndPush(HarborUpload harborUpload) {
-        // 截取目录和文件名
+        /*
+        * 截取目录和文件名
+        * */
         String url = harborUpload.getImageUrl();
         String[] split = url.split("http://.*?statics/");
         String path = split[1];
@@ -78,16 +82,17 @@ public class UploadServiceImpl implements IUploadService {
         //TODO 此处假设path为：/root/test/base-centos.tar
         path = "/root/test/centos-base-ssh.tar";
 
-        // 使用命令的方式，加载镜像，打标签，登录harbor，再推送到harbor中去
+        /*
+        * 使用命令的方式，加载镜像，打标签，登录harbor，再推送到harbor中去
+        * */
         // TODO 此处应该用异步的方式，不然会阻塞
-        String loadCMD = "docker load -i " + path;
-        String sourceImageName = null;
+        String sourceImageName = harborUpload.getImageName() + ":" + harborUpload.getImageTag();
+        // 选用import的方式，不用load，因为load不能指定tag
+        String importCMD = "docker import " + path + " " + sourceImageName;
         try {
-            sourceImageName = shellMan.exec(loadCMD);//Loaded image: base-centos:1.0.0
-            sourceImageName = sourceImageName.replace("Loaded image: ", "").replace("\n", "");
+            shellMan.exec(importCMD);//Loaded image: base-centos:1.0.0
         } catch (IOException e) {
-            // TODO 此处只考虑加载镜像包没考虑容器包，有时间应该补上
-            throw new HarborShellException(String.format("加载镜像包失败，命令为:%s，报错信息：%s", loadCMD, e.getMessage()));
+            throw new HarborShellException(String.format("加载镜像包失败，命令为:%s，报错信息：%s", importCMD, e.getMessage()));
         }
         // 推送镜像
         pushImage(path, sourceImageName);

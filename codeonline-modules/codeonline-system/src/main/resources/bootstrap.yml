@@ -26,4 +26,4 @@ spring:
 
 logging:
   level:
-    com.codeonline.harbor.mapper: debug
+    com.codeonline.system.mapper: debug
