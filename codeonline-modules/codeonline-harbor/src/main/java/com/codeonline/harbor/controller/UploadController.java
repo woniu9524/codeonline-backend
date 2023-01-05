@@ -87,6 +87,7 @@ public class UploadController {
         harborUpload.setUpdateBy(username);
         harborUpload.setCreateTime(DateUtils.getNowDate());
         harborUpload.setUpdateTime(DateUtils.getNowDate());
+        harborUpload.setIntroduce(harborUploadVo.getIntroduce());
         //判断是dockerfile还是镜像文件
         if(harborUploadVo.isDockerfile()){
             return uploadService.dockerfileToImageAndPush(harborUpload);

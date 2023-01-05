@@ -2,6 +2,7 @@ package com.codeonline.harbor.api;
 
 import com.codeonline.harbor.api.model.Artifact;
 import com.codeonline.harbor.api.model.Repository;
+import com.codeonline.harbor.api.model.Tag;
 import com.codeonline.harbor.utils.RestTemplateUtils;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -58,11 +59,13 @@ public class RepositoryApi {
             }.getType());
             // 读取tag的name
             List<String> tags = new ArrayList<>();
-            artifacts.stream().forEach(artifact -> {
-                artifact.getTags().stream().forEach(tag -> {
-                    tags.add(tag.getName());
-                });
-            });
+            for (Artifact artifact : artifacts) {
+                if (artifact.getTags()!=null){
+                    for (Tag tag : artifact.getTags()) {
+                        tags.add(tag.getName());
+                    }
+                }
+            }
             return tags;
         }catch (Exception e){
             return null;

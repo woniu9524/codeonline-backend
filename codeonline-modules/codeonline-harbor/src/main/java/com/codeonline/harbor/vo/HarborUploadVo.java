@@ -16,6 +16,8 @@ public class HarborUploadVo {
 
     private String tag;
 
+    private String introduce;
+
     @JsonProperty("isPublic")
     private boolean isPublic;
 

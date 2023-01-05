@@ -14,6 +14,8 @@ public class HarborUpload extends BaseEntity {
 
     private String imageTag;
 
+    private String introduce;
+
     private String imageUrl;
 
     private boolean isPublic;
