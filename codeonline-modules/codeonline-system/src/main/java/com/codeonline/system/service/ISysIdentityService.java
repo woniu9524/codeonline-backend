@@ -16,4 +16,5 @@ public interface ISysIdentityService {
 
     public AjaxResult addForms(SysIdentity sysIdentity);
 
+
 }

@@ -1,6 +1,7 @@
 package com.codeonline.system.service.impl;
 
 import com.codeonline.common.core.web.domain.AjaxResult;
+import com.codeonline.system.domain.BusinessAffair;
 import com.codeonline.system.domain.SysIdentity;
 import com.codeonline.system.domain.SysSimpleDept;
 import com.codeonline.system.domain.SysSimpleUser;
@@ -41,11 +42,57 @@ public class SysIdentityServiceImpl implements ISysIdentityService {
 
     @Override
     public AjaxResult addForms(SysIdentity sysIdentity) {
-        int i = sysIdentityMapper.addForms(sysIdentity);
-        if (i == 1) {
-            return AjaxResult.success("添加成功,请等待管理员审核");
+        int flag;
+        BusinessAffair businessAffair = new BusinessAffair();
+        // 判断是否已经存在
+        List<SysIdentity> sysIdentities = sysIdentityMapper.selectUserId(sysIdentity.getUserId());
+
+        if (sysIdentities.size() > 0) {
+            // 判断是否已经完成
+            if(sysIdentities.get(0).getHasFinished()){
+                return AjaxResult.success("已经完成绑定，重新登录后生效");
+            }
+            // 更新数据
+            flag = sysIdentityMapper.updateForms(sysIdentity);
+            if (flag <= 0) {
+                return AjaxResult.error("更新失败");
+            }
+            businessAffair.setAccessId(sysIdentities.get(0).getId());
         } else {
-            return AjaxResult.error("添加失败,请联系管理员");
+            // 插入数据
+            flag = sysIdentityMapper.addForms(sysIdentity);
+            if (flag <= 0) {
+                return AjaxResult.error("插入失败");
+            }
+            sysIdentities = sysIdentityMapper.selectUserId(sysIdentity.getUserId());
+            businessAffair.setAccessId(sysIdentities.get(0).getId());
         }
+
+        businessAffair.setAffairType("身份绑定");
+        businessAffair.setAffairStatus("待审核");
+        businessAffair.setAffairPeopleName(sysIdentity.getCreateBy());
+        businessAffair.setAffairPeopleId(sysIdentity.getUserId());
+        businessAffair.setHandlePeopleId(sysIdentity.getApproverId());
+        businessAffair.setRemark(sysIdentity.getRemark());
+        businessAffair.setCreateBy(sysIdentity.getCreateBy());
+        businessAffair.setUpdateBy(sysIdentity.getUpdateBy());
+
+        if(sysIdentityMapper.selectAccessId(businessAffair.getAccessId())==0){
+            if (sysIdentityMapper.addBusinessAffair(businessAffair) == 1) {
+                return AjaxResult.success("添加成功,请等待管理员审核");
+            } else {
+                return AjaxResult.error("添加失败,请联系管理员");
+            }
+        }else {
+            if(sysIdentityMapper.updateBusinessAffair(businessAffair)==1){
+                return AjaxResult.success("添加成功,请等待管理员审核");
+            }else {
+                return AjaxResult.error("添加失败,请联系管理员");
+            }
+        }
+
+
     }
+
+
 }

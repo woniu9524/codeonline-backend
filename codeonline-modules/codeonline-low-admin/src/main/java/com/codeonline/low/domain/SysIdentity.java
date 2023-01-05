@@ -1,10 +1,7 @@
-package com.codeonline.system.domain;
+package com.codeonline.low.domain;
 
 import com.codeonline.common.core.web.domain.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
-
-import javax.validation.constraints.NotBlank;
 
 public class SysIdentity extends BaseEntity {
     private Long id;

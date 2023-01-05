@@ -7,9 +7,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 		<id     property="deptId"     column="dept_id"     />
 		<result property="deptName"   column="dept_name"   />
 	</resultMap>
-	<insert id="addForms" parameterType="com.codeonline.system.domain.SysIdentity">
-	insert into sys_my_identity (user_id,identity_id,college_id,class_id,approver_id,create_by,create_time,update_by,update_time,remark)
-	values (#{userId},#{identityId},#{collegeId},#{classId},#{approverId},#{createBy},sysdate(),#{updateBy},sysdate(),#{remark})
+	<insert id="addForms" parameterType="com.codeonline.system.domain.SysIdentity" useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+	insert into sys_my_identity (user_id,identity_id,college_id,class_id,approver_id,has_finished,create_by,create_time,update_by,update_time,remark)
+	values (#{userId},#{identityId},#{collegeId},#{classId},#{approverId},0,#{createBy},sysdate(),#{updateBy},sysdate(),#{remark})
+	</insert>
+
+	<insert id="addBusinessAffair" parameterType="com.codeonline.system.domain.BusinessAffair">
+		insert into business_affair (affair_id,access_id, handle_people_id, affair_people_id, affair_people_name, affair_type, affair_status, create_by, create_time, update_by, update_time, remark)
+		values (#{affairId},#{accessId}, #{handlePeopleId}, #{affairPeopleId}, #{affairPeopleName}, #{affairType}, #{affairStatus}, #{createBy}, sysdate(), #{updateBy}, sysdate(), #{remark})
 	</insert>
 
 	<select id="selectColleges" resultMap="SysSimpleDeptResult">
