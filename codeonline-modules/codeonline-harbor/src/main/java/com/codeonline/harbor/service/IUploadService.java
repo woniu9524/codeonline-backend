@@ -4,7 +4,7 @@ import com.codeonline.common.core.web.domain.AjaxResult;
 import com.codeonline.harbor.model.HarborUpload;
 
 public interface IUploadService {
-    AjaxResult dockerfileToImageAndPush(HarborUpload harborUpload);
+    void dockerfileToImageAndPush(HarborUpload harborUpload,String harborKey);
 
-    AjaxResult loadImageAndPush(HarborUpload harborUpload);
+    void loadImageAndPush(HarborUpload harborUpload,String harborKey);
 }

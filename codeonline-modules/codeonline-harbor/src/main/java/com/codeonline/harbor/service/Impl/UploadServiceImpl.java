@@ -1,7 +1,9 @@
 package com.codeonline.harbor.service.Impl;
 
+import com.codeonline.common.core.constant.Constants;
 import com.codeonline.common.core.exception.harbor.HarborShellException;
 import com.codeonline.common.core.web.domain.AjaxResult;
+import com.codeonline.common.redis.service.RedisService;
 import com.codeonline.harbor.api.RepositoryApi;
 import com.codeonline.harbor.api.model.Repository;
 import com.codeonline.harbor.api.model.ScannerRegistrationReq;
@@ -9,13 +11,16 @@ import com.codeonline.harbor.mapper.HarborUploadMapper;
 import com.codeonline.harbor.model.HarborUpload;
 import com.codeonline.harbor.service.IUploadService;
 import com.codeonline.harbor.shell.ShellMan;
+import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class UploadServiceImpl implements IUploadService {
@@ -24,6 +29,9 @@ public class UploadServiceImpl implements IUploadService {
 
     @Autowired
     private ShellMan shellMan;
+
+    @Autowired
+    private RedisService redisService;
 
     @Autowired
     private HarborUploadMapper harborUploadMapper;
@@ -40,8 +48,10 @@ public class UploadServiceImpl implements IUploadService {
     @Value("${harbor.harborSpace}")
     private String harborSpace;
 
+    @SneakyThrows
+    @Async
     @Override
-    public AjaxResult dockerfileToImageAndPush(HarborUpload harborUpload) {
+    public void dockerfileToImageAndPush(HarborUpload harborUpload, String harborKey) {
         // 截取目录和文件名，正则截去http://127.0.0.1:9300/statics/
         String url = harborUpload.getImageUrl();
         String[] split = url.split("http://.*?statics/");
@@ -64,14 +74,20 @@ public class UploadServiceImpl implements IUploadService {
         if (hasPushed(dockerfileName)) {
             // 更新数据库
             harborUploadMapper.insertHarborUpload(harborUpload);
-            return AjaxResult.success("上传成功");
+            // 写入到redis
+            redisService.setCacheObject(harborKey, "上传成功", 10l, TimeUnit.MINUTES);
+
+        }else {
+            redisService.setCacheObject(harborKey, "上传失败", 10l, TimeUnit.MINUTES);
         }
-        return AjaxResult.error("上传失败");
+
 
     }
 
+    @SneakyThrows
+    @Async
     @Override
-    public AjaxResult loadImageAndPush(HarborUpload harborUpload) {
+    public void loadImageAndPush(HarborUpload harborUpload, String harborKey) {
         /*
         * 截取目录和文件名
         * */
@@ -100,10 +116,13 @@ public class UploadServiceImpl implements IUploadService {
         if (hasPushed(sourceImageName)) {
             // 更新数据库
             harborUploadMapper.insertHarborUpload(harborUpload);
-            return AjaxResult.success("推送成功");
+            redisService.setCacheObject(harborKey, "上传成功", 10l, TimeUnit.MINUTES);
+        }else{
+            redisService.setCacheObject(harborKey, "上传失败", 10l, TimeUnit.MINUTES);
         }
-        return AjaxResult.error("推送失败");
+
     }
+
 
     public void pushImage(String path, String sourceImageName) {
         // 打标签  SOURCE_IMAGE[:TAG] 192.168.3.77:30002/codeonline-dev/REPOSITORY[:TAG]
