@@ -69,7 +69,7 @@ public class UploadServiceImpl implements IUploadService {
             throw new HarborShellException("docker build失败，错误信息：" + e.getMessage());
         }
         //docker push
-        pushImage(path, dockerfileName);
+        pushImage(path, dockerfileName,dockerfileName);
         // 判断是否上传成功
         if (hasPushed(dockerfileName)) {
             // 更新数据库
@@ -96,22 +96,24 @@ public class UploadServiceImpl implements IUploadService {
         String path = split[1];
         path = BaseUrl + path;
         //TODO 此处假设path为：/root/test/base-centos.tar
-        path = "/root/test/centos-base-ssh.tar";
+        path = "/root/test/vscode-python-base.tar";
 
         /*
         * 使用命令的方式，加载镜像，打标签，登录harbor，再推送到harbor中去
         * */
-        // TODO 此处应该用异步的方式，不然会阻塞
-        String sourceImageName = harborUpload.getImageName() + ":" + harborUpload.getImageTag();
-        // 选用import的方式，不用load，因为load不能指定tag
-        String importCMD = "docker import " + path + " " + sourceImageName;
+        String sourceImageName;
+        String targetImageName= harborUpload.getImageName() + ":" + harborUpload.getImageTag();
+        // 选用load的方式
+
+        String loadCMD = "docker load -i " + path;
         try {
-            shellMan.exec(importCMD);//Loaded image: base-centos:1.0.0
+            sourceImageName = shellMan.exec(loadCMD);//Loaded image: base-centos:1.0.0
+            sourceImageName = sourceImageName.replace("Loaded image: ", "").replace("\n", "");
         } catch (IOException e) {
-            throw new HarborShellException(String.format("加载镜像包失败，命令为:%s，报错信息：%s", importCMD, e.getMessage()));
+            throw new HarborShellException(String.format("加载镜像包失败，命令为:%s，报错信息：%s", loadCMD, e.getMessage()));
         }
         // 推送镜像
-        pushImage(path, sourceImageName);
+        pushImage(path, sourceImageName,targetImageName);
         // 判断是否推送成功
         if (hasPushed(sourceImageName)) {
             // 更新数据库
@@ -123,10 +125,45 @@ public class UploadServiceImpl implements IUploadService {
 
     }
 
+    @Override
+    public void importImageAndPush(HarborUpload harborUpload, String harborKey) {
+        /*
+         * 截取目录和文件名
+         * */
+        String url = harborUpload.getImageUrl();
+        String[] split = url.split("http://.*?statics/");
+        String path = split[1];
+        path = BaseUrl + path;
+        //TODO 此处假设path为：/root/test/base-centos.tar
+        path = "/root/test/vscode-python-base.tar";
 
-    public void pushImage(String path, String sourceImageName) {
+        /*
+         * 使用命令的方式，加载镜像，打标签，登录harbor，再推送到harbor中去
+         * */
+        String sourceImageName = harborUpload.getImageName() + ":" + harborUpload.getImageTag();
+        // 选用import的方式，不用load，因为load不能指定tag
+        String importCMD = "docker import " + path + " " + sourceImageName;
+        try {
+            shellMan.exec(importCMD);//Loaded image: base-centos:1.0.0
+        } catch (IOException e) {
+            throw new HarborShellException(String.format("加载镜像包失败，命令为:%s，报错信息：%s", importCMD, e.getMessage()));
+        }
+        // 推送镜像
+        pushImage(path, sourceImageName,sourceImageName);
+        // 判断是否推送成功
+        if (hasPushed(sourceImageName)) {
+            // 更新数据库
+            harborUploadMapper.insertHarborUpload(harborUpload);
+            redisService.setCacheObject(harborKey, "上传成功", 10l, TimeUnit.MINUTES);
+        }else{
+            redisService.setCacheObject(harborKey, "上传失败", 10l, TimeUnit.MINUTES);
+        }
+    }
+
+
+    public void pushImage(String path, String sourceImageName,String targetImageName) {
         // 打标签  SOURCE_IMAGE[:TAG] 192.168.3.77:30002/codeonline-dev/REPOSITORY[:TAG]
-        String tagCMD = String.format("docker tag %s %s/%s/%s", sourceImageName, harborUrl, harborSpace, sourceImageName);
+        String tagCMD = String.format("docker tag %s %s/%s/%s", sourceImageName, harborUrl, harborSpace, targetImageName);
         try {
             shellMan.exec(tagCMD);
         } catch (IOException e) {
@@ -144,20 +181,21 @@ public class UploadServiceImpl implements IUploadService {
             throw new HarborShellException(String.format("登录harbor失败，报错信息为%s", e.getMessage()));
         }
         // 推送到harbor docker push 192.168.3.77:30002/codeonline-all/REPOSITORY[:TAG]
-        String pushCMD = String.format("docker push %s/%s/%s", harborUrl, harborSpace, sourceImageName);
+        String pushCMD = String.format("docker push %s/%s/%s", harborUrl, harborSpace, targetImageName);
         try {
-            String pushResult = shellMan.exec(pushCMD);// digest: sha256
-            //判断推送是否成功
-
+            shellMan.exec(pushCMD);
         } catch (IOException e) {
             throw new HarborShellException(String.format("推送到harbor失败，命令为:%s，报错信息为%s", pushCMD, e.getMessage()));
         }
         // 删除本地镜像
-        String deleteCMD = String.format("docker rmi %s", sourceImageName);
+        String deleteCMD1 = String.format("docker rmi %s", sourceImageName);
+        String deleteCMD2 = String.format("docker rmi %s/%s/%s", harborUrl, harborSpace, targetImageName);
+
         try {
-            shellMan.exec(deleteCMD);
+            shellMan.exec(deleteCMD1);
+            shellMan.exec(deleteCMD2);
         } catch (IOException e) {
-            throw new HarborShellException(String.format("删除本地镜像失败，命令为:%s，报错信息为%s", deleteCMD, e.getMessage()));
+            throw new HarborShellException(String.format("删除本地镜像失败，命令为:%s;%s，报错信息为%s", deleteCMD1,deleteCMD2, e.getMessage()));
         }
         // 删除本地打了标签的镜像
         String deleteTagCMD = String.format("docker rmi %s/%s/%s", harborUrl, harborSpace, sourceImageName);

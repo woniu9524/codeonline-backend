@@ -21,8 +21,8 @@ public class HarborUploadVo {
     @JsonProperty("isPublic")
     private boolean isPublic;
 
-    @JsonProperty("isDockerfile")
-    private boolean isDockerfile;
+
+    private String uploadType;
 
     @NotBlank(message = "文件上传出问题了")
     private String uuid;

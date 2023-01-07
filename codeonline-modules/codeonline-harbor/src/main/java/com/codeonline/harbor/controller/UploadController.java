@@ -96,11 +96,18 @@ public class UploadController {
         Map<String, String> resultMap = new HashMap<>();
         resultMap.put("uploadToken", uuid);
         //判断是dockerfile还是镜像文件
-        if(harborUploadVo.isDockerfile()){
-            uploadService.dockerfileToImageAndPush(harborUpload,harborKey);
-
-        }else {
-            uploadService.loadImageAndPush(harborUpload,harborKey);
+        switch (harborUploadVo.getUploadType()){
+            case "dockerfile":
+                uploadService.dockerfileToImageAndPush(harborUpload,harborKey);
+                break;
+            case "image":
+                uploadService.loadImageAndPush(harborUpload,harborKey);
+                break;
+            case "container":
+                uploadService.importImageAndPush(harborUpload,harborKey);
+                break;
+            default:
+                return AjaxResult.error("上传类型错误");
         }
         return AjaxResult.success(resultMap);
 
