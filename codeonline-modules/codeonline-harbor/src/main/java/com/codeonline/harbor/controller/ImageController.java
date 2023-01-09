@@ -1,6 +1,8 @@
 package com.codeonline.harbor.controller;
 
 import com.codeonline.common.core.web.domain.AjaxResult;
+import com.codeonline.common.log.annotation.Log;
+import com.codeonline.common.log.enums.BusinessType;
 import com.codeonline.harbor.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,6 +22,7 @@ public class ImageController {
     private ImageService imageService;
 
     // 检查镜像是否存在
+    @Log(title = "镜像检测",businessType = BusinessType.OTHER)
     @GetMapping("/{imageName}")
     public AjaxResult checkImage(@PathVariable String imageName){
         return imageService.checkImage(imageName);

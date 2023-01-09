@@ -1,6 +1,8 @@
 package com.codeonline.harbor.controller;
 
 import com.codeonline.common.core.web.domain.AjaxResult;
+import com.codeonline.common.log.annotation.Log;
+import com.codeonline.common.log.enums.BusinessType;
 import com.codeonline.harbor.service.IMarketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +23,7 @@ public class MarketController {
     /*
     *  读取镜像市场的镜像
     * */
+    @Log(title = "应用市场",businessType = BusinessType.INSERT)
     @GetMapping("/images")
     public AjaxResult getAllMarketImages(){
         return marketService.getAllMarketImages();

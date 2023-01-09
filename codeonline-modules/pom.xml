@@ -15,6 +15,7 @@
         <module>codeonline-file</module>
         <module>codeonline-harbor</module>
         <module>codeonline-k8s</module>
+        <module>codeonline-low-admin</module>
     </modules>
 
     <artifactId>codeonline-modules</artifactId>

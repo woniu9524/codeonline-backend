@@ -2,10 +2,18 @@ package com.codeonline.k8s;
 
 
 
-import com.alibaba.nacos.shaded.io.grpc.Metadata;
+import com.alibaba.nacos.shaded.com.google.gson.Gson;
+import com.codeonline.common.core.constant.K8sConstants;
+import com.codeonline.common.core.utils.StringUtils;
+import com.codeonline.common.security.utils.SecurityUtils;
+import com.codeonline.k8s.mapper.K8sMapper;
+import com.codeonline.k8s.model.K8sConfigure;
+import com.codeonline.k8s.model.K8sDeployment;
+import com.codeonline.k8s.model.K8sService;
 import com.codeonline.k8s.shell.ShellMan;
 
 
+import com.codeonline.k8s.utils.K8sUtil;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
@@ -13,6 +21,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 
@@ -24,7 +33,7 @@ import java.util.Map;
 
 
 @SpringBootTest(classes= CodeOnlineK8sApplication.class)
-public class test{
+public class TestK8s {
 
     @Autowired
     private ShellMan shellMan;
@@ -122,5 +131,73 @@ public class test{
         System.out.println(service);
         //创建service
         client.services().inNamespace("codeonline-all-pods").create(service);
+    }
+
+    @Autowired
+    private K8sUtil k8sUtil;
+
+    @Autowired
+    private K8sMapper k8sMapper;
+
+    @Value("${harbor.harborUrl}")
+    private String harborUrl;
+    @Value("${harbor.harborSpace}")
+    private String harborSpace;
+    @Value("${nfs.server}")
+    private String nfsServer;
+    @Value("${nfs.path}")
+    private String nfsPath;
+
+    @Test
+    public void deploy() throws IOException {
+        String labId="1-5464146515";
+        // 读取配置文件
+        String k8sConfigureJsonString = k8sMapper.selectK8sConfigureByLabId(labId);
+        // 将json字符串转换为k8sConfigure
+        K8sConfigure k8sConfigure = new Gson().fromJson(k8sConfigureJsonString,K8sConfigure.class);
+        // 读取teacherId
+        Long teacherId = k8sMapper.selectUserIdByLabId(labId);
+        // 读取userId
+        Long studentId = 1L;
+        // 修改imageName
+        if("harbor".equals(k8sConfigure.getSourceFrom())){
+            String imageName=k8sConfigure.getImageName();
+            k8sConfigure.setImageName(harborUrl+"/"+harborSpace+"/"+imageName);
+        }
+        // 提前创建nfs目录
+        String nfsPathNew = this.nfsPath + "/" + teacherId + "/" + labId+ "/" + studentId;
+        if(!StringUtils.isEmpty(k8sConfigure.getVolume())){
+            shellMan.exec("mkdir -p "+nfsPathNew);
+        }
+
+        K8sDeployment k8sDeployment = new K8sDeployment(k8sConfigure,"1-5464146515",String.valueOf(teacherId),String.valueOf(studentId),nfsPathNew,nfsServer);
+        k8sDeployment.deploy();
+    }
+
+    @Test
+    public void service() throws IOException {
+        // 读取配置文件
+        String k8sConfigureJsonString = k8sMapper.selectK8sConfigureByLabId("1-5464146515");
+        // 将json字符串转换为k8sConfigure
+        K8sConfigure k8sConfigure = new Gson().fromJson(k8sConfigureJsonString,K8sConfigure.class);
+
+        // 读取teacherId
+        Long teacherId = k8sMapper.selectUserIdByLabId("1-5464146515");
+        // 读取userId
+        Long studentId = 1L;
+        // 获取NodePorts
+        List<Map<String,Integer>> ports=new ArrayList<>();
+        for (Map<String, String> portMap : k8sConfigure.getPorts()) {
+            Map<String,Integer> port=new HashMap<>();
+            if (portMap.get("service").equals("http")||portMap.get("service").equals("ssh")){
+                port.put("nodePort",k8sUtil.readNodePortCanUse());
+            }
+            port.put("port", Integer.valueOf(portMap.get("port")));
+            port.put("targetPort", Integer.valueOf(portMap.get("targetPort")));
+            ports.add(port);
+        }
+        // 创建service
+        K8sService k8sService = new K8sService(k8sConfigure,"1-5464146515",String.valueOf(teacherId),String.valueOf(studentId),ports);
+        k8sService.createService();
     }
 }

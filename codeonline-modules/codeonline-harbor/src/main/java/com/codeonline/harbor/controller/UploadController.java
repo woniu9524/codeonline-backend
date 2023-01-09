@@ -113,7 +113,7 @@ public class UploadController {
 
     }
 
-    @Log(title = "harbor上传",businessType = BusinessType.EXPORT)
+    @Log(title = "harbor上传",businessType = BusinessType.INSERT)
     @GetMapping("/status/{uploadToken}")
     public AjaxResult getUploadStatus(@PathVariable String uploadToken) {
         String harborKey = CacheConstants.HARBOR_ASYNC_UPLOAD_KEY + uploadToken;
