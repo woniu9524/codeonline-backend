@@ -160,7 +160,9 @@ public class K8sDeployment {
         deployment.setSpec(deploymentSpec);
     }
 
-    public void deploy() {
+
+
+    public Deployment populate(){
         populateLabels();// 设置标签
         populatePodMetadata();// 设置Pod的metadata
         populateDeploymentMetadata();// 设置deployment的metadata
@@ -173,8 +175,10 @@ public class K8sDeployment {
         populatePodTemplateSpec();// 设置Pod模板
         populateDeploymentSpec();// 设置deployment的spec
         populateDeployment();// 设置deployment
-        client.apps().deployments().inNamespace(K8sConstants.K8S_NAMESPACE).create(deployment);
+        return deployment;
     }
+
+
 
 
     public K8sDeployment() {

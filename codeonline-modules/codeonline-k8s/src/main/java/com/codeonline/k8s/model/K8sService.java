@@ -79,15 +79,16 @@ public class K8sService {
         service.setSpec(serviceSpec);
     }
 
-    public void createService() {
+
+
+    public Service populate() {
         populateLabels();
         populateServiceMetadata();
         populateServicePorts();
         populateServiceSpec();
         populateService();
-        client.services().inNamespace(K8sConstants.K8S_NAMESPACE).create(service);
+        return service;
     }
-
 
 
     public K8sService() {

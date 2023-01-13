@@ -17,6 +17,7 @@ import com.codeonline.k8s.utils.K8sUtil;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentSpec;
+import io.fabric8.kubernetes.api.model.extensions.Ingress;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import org.junit.jupiter.api.Test;
@@ -171,7 +172,7 @@ public class TestK8s {
         }
 
         K8sDeployment k8sDeployment = new K8sDeployment(k8sConfigure,"1-5464146515",String.valueOf(teacherId),String.valueOf(studentId),nfsPathNew,nfsServer);
-        k8sDeployment.deploy();
+        k8sDeployment.populate();
     }
 
     @Test
@@ -198,6 +199,13 @@ public class TestK8s {
         }
         // 创建service
         K8sService k8sService = new K8sService(k8sConfigure,"1-5464146515",String.valueOf(teacherId),String.valueOf(studentId),ports);
-        k8sService.createService();
+        k8sService.populate();
+    }
+
+
+    @Test
+    public void K8sUtilTest() {
+        List<ServicePort> servicePort = k8sUtil.getServicePort("codeonline-service-2-1673483074074-1");
+        System.out.println(servicePort);
     }
 }

@@ -1,12 +1,12 @@
 # Tomcat
 server:
-  port: 9201
+  port: 9202
 
 # Spring
 spring: 
   application:
     # 应用名称
-    name: codeonline-system
+    name: codeonline-user
   profiles:
     # 环境配置
     active: dev
@@ -24,6 +24,6 @@ spring:
         shared-configs:
           - application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
 
-#logging:
-#  level:
-#    com.codeonline.system.mapper: debug
+logging:
+  level:
+    com.codeonline.user.mapper: debug
