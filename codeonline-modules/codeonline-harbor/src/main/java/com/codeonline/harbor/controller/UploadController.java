@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @RestController
@@ -88,49 +90,43 @@ public class UploadController {
         harborUpload.setCreateTime(DateUtils.getNowDate());
         harborUpload.setUpdateTime(DateUtils.getNowDate());
         harborUpload.setIntroduce(harborUploadVo.getIntroduce());
+        // 因为要使用异步，所以先生成一个uuid，然后将信息放到redis中，然后返回uuid，前端轮询，当redis中有信息的时候，就返回信息
+        String uuid = IdUtils.simpleUUID();
+        String harborKey = CacheConstants.HARBOR_ASYNC_UPLOAD_KEY + uuid;
+        Map<String, String> resultMap = new HashMap<>();
+        resultMap.put("uploadToken", uuid);
         //判断是dockerfile还是镜像文件
-        if(harborUploadVo.isDockerfile()){
-            return uploadService.dockerfileToImageAndPush(harborUpload);
+        switch (harborUploadVo.getUploadType()){
+            case "dockerfile":
+                uploadService.dockerfileToImageAndPush(harborUpload,harborKey);
+                break;
+            case "image":
+                uploadService.loadImageAndPush(harborUpload,harborKey);
+                break;
+            case "container":
+                uploadService.importImageAndPush(harborUpload,harborKey);
+                break;
+            default:
+                return AjaxResult.error("上传类型错误");
         }
-        return uploadService.loadImageAndPush(harborUpload);
+        return AjaxResult.success(resultMap);
 
     }
 
-//    //上传dockerfile
-//    @Log(title = "harbor上传", businessType = BusinessType.INSERT)
-//    public AjaxResult insertDockerfile(@RequestBody MultipartFile dockerfile) {
-//        //上传文件
-//        R<SysFile> result = remoteFileService.upload(dockerfile);
-//        if (result.getCode() == 200) {
-//            //上传成功
-//            String url = result.getData().getUrl();
-//            if(url.endsWith(".")){
-//                url=url.substring(0,url.length()-1);
-//            }
-//            // TODO 名字要傳進來
-//            String dockerfileName = "base-centos:1.0.0";
-//            return uploadService.dockerfileToImageAndPush(url, dockerfileName);
-//        } else {
-//            //上传失败
-//            return AjaxResult.error(result.getMsg());
-//        }
-//    }
-//
-//    //上传镜像
-//    @Log(title = "harbor上传", businessType = BusinessType.INSERT)
-//    @PostMapping("/image")
-//    public AjaxResult addImage(@RequestBody MultipartFile image) {
-//        //上传文件
-//        R<SysFile> result = remoteFileService.upload(image);
-//        if (result.getCode() == 200) {
-//            //上传成功
-//            String url = result.getData().getUrl();
-//            String imageName = result.getData().getName();
-//            return uploadService.loadImageAndPush(url, imageName);
-//        } else {
-//            //上传失败
-//            return AjaxResult.error(result.getMsg());
-//        }
-//    }
+    @Log(title = "harbor上传",businessType = BusinessType.INSERT)
+    @GetMapping("/status/{uploadToken}")
+    public AjaxResult getUploadStatus(@PathVariable String uploadToken) {
+        String harborKey = CacheConstants.HARBOR_ASYNC_UPLOAD_KEY + uploadToken;
+        String result = redisService.getCacheObject(harborKey);
+        Map<String, String> resultMap = new HashMap<>();
+
+        if (result == null) {
+            resultMap.put("status", "上传中");
+        }else {
+            resultMap.put("status", result);
+        }
+        return AjaxResult.success(resultMap);
+    }
+
 
 }

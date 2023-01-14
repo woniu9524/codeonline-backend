@@ -24,6 +24,6 @@ spring:
         shared-configs:
           - application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
 
-logging:
-  level:
-    com.codeonline.system.mapper: debug
+#logging:
+#  level:
+#    com.codeonline.system.mapper: debug
