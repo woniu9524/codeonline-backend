@@ -193,6 +193,19 @@ public class K8sServiceImpl implements IK8sService {
         return AjaxResult.success(maps);
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public AjaxResult deleteLabByStudent(String labId, Long userId) {
+        K8sUserAndDeployRelation k8sUserAndDeployRelation = k8sMapper.selectK8sUserAndDeployRelationByLabIdAndUserId(labId, userId);
+        if (k8sUserAndDeployRelation == null){
+            return AjaxResult.error("未创建，不需要删除");
+        }
+        k8sUtil.deleteDeployment(k8sUserAndDeployRelation.getDeploymentName());
+        k8sUtil.deleteService(k8sUserAndDeployRelation.getServiceName());
+        k8sMapper.deleteLabByStudent(labId,userId);
+        return AjaxResult.success("删除成功");
+    }
+
     public Deployment populateDeployment(K8sConfigure k8sConfigure, String labId, Long teacherId, Long studentId) throws IOException {
         // 修改imageName
         if("harbor".equals(k8sConfigure.getSourceFrom())){
@@ -203,9 +216,10 @@ public class K8sServiceImpl implements IK8sService {
         String nfsPathNew = this.nfsPath + "/" + teacherId + "/" + labId+ "/" + studentId;
         if(!StringUtils.isEmpty(k8sConfigure.getVolume())){
             shellMan.exec("mkdir -p "+nfsPathNew);
+            shellMan.exec("chmod 777 "+nfsPathNew);
         }
 
-        K8sDeployment k8sDeployment = new K8sDeployment(k8sConfigure,labId,String.valueOf(teacherId),String.valueOf(studentId),nfsPathNew,nfsServer);
+        K8sDeployment k8sDeployment = new K8sDeployment(k8sConfigure,labId,String.valueOf(studentId),String.valueOf(teacherId),nfsPathNew,nfsServer);
         return k8sDeployment.populate();
     }
 
@@ -222,7 +236,7 @@ public class K8sServiceImpl implements IK8sService {
             ports.add(port);
         }
         // 创建service
-        K8sService k8sService = new K8sService(k8sConfigure,labId,String.valueOf(teacherId),String.valueOf(studentId),ports);
+        K8sService k8sService = new K8sService(k8sConfigure,labId,String.valueOf(studentId),String.valueOf(teacherId),ports);
         return k8sService.populate();
     }
 }

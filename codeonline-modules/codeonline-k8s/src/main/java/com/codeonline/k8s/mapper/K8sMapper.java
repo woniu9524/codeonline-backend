@@ -66,4 +66,8 @@ public interface K8sMapper {
     @Select("select * from k8s_user_and_deploy_relation where lab_id=#{labId} and user_id=#{userId}")
     K8sUserAndDeployRelation selectK8sUserAndDeployRelationByLabIdAndUserId(@Param("labId") String labId, @Param("userId") Long userId);
 
+    // 学生删除实验
+    @Delete("delete from k8s_user_and_deploy_relation where lab_id = #{labId} and user_id = #{userId}")
+    int deleteLabByStudent(@Param("labId") String labId,@Param("userId") Long userId);
+
 }

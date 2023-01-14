@@ -37,4 +37,5 @@ public interface ICourseService {
     // 删除一个学生到课程
     AjaxResult deleteStudentToCourse(Long courseId, Long studentId);
 
+
 }

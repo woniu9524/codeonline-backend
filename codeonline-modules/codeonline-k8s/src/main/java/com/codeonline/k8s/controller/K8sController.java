@@ -57,4 +57,14 @@ public class K8sController {
         return k8sService.queryLabSituationByUserId(userId,labId);
     }
 
+    /*
+    *  学生删除实验
+     */
+    @Log(title = "k8s控制",businessType = BusinessType.DELETE)
+    @DeleteMapping("/labDelete/{labId}")
+    public AjaxResult labDelete(@PathVariable String labId){
+        Long userId = SecurityUtils.getUserId();
+        return k8sService.deleteLabByStudent(labId,userId);
+    }
+
 }

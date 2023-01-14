@@ -56,6 +56,7 @@ public interface CourseMapper {
     @Delete("delete from business_user_and_course_relation where user_id = #{userId} and course_id = #{courseId}")
     int deleteStudentFromCourse(@Param("userId") Long userId, @Param("courseId") Long courseId);
 
-
-
+    // 查询当前学生的所有课程
+    @Select("select * from business_course where id in (select course_id from business_user_and_course_relation where user_id = #{userId})")
+    List<Course> queryCourseByStudentId(@Param("userId") Long studentId);
 }

@@ -183,7 +183,6 @@ public class TestK8s {
 
     @Test
     public void K8sUtilTest() {
-        List<ServicePort> servicePort = k8sUtil.getServicePort("codeonline-service-2-1673483074074-1");
-        System.out.println(servicePort);
+        System.out.println(k8sUtil.listNamespace());
     }
 }

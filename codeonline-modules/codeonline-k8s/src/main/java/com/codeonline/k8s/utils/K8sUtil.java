@@ -1,6 +1,7 @@
 package com.codeonline.k8s.utils;
 
 import com.codeonline.common.core.constant.K8sConstants;
+import com.codeonline.k8s.CodeOnlineK8sApplication;
 import com.codeonline.k8s.shell.ShellMan;
 import io.fabric8.kubernetes.api.model.*;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
@@ -11,7 +12,7 @@ import io.fabric8.kubernetes.client.dsl.ServiceResource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,12 @@ public class K8sUtil {
     @Autowired
     private ShellMan shellMan;
 
+
     KubernetesClient client = new KubernetesClientBuilder().build();
+
+    public K8sUtil() throws IOException {
+    }
+
 
     /*
      *  获取一个可以使用的NodePort

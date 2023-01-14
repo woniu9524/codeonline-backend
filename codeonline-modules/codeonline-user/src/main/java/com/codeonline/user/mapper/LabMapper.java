@@ -39,4 +39,6 @@ public interface LabMapper {
      */
     @Delete("delete from k8s_configure where id in (select configure_id from k8s_configure_relation where lab_id=#{labId})")
     int deleteK8sConfigureByLabId(@Param("labId") String labId);
+
+
 }

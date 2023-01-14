@@ -24,4 +24,7 @@ public interface IK8sService {
     // 查询个人实验情况
     AjaxResult queryLabSituationByUserId(Long userId, String labId);
 
+    // 学生删除实验
+    AjaxResult deleteLabByStudent(String labId, Long userId);
+
 }

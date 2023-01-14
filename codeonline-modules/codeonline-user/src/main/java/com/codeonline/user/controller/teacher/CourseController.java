@@ -7,7 +7,6 @@ import com.codeonline.user.service.teacher.ICourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -91,6 +90,9 @@ public class CourseController {
     public AjaxResult deleteStudentFromCourse(@PathVariable Long courseId, @PathVariable Long studentId){
         return courseService.deleteStudentToCourse(courseId, studentId);
     }
+
+    // 查看当前学生的所有课程
+
 
 
 
