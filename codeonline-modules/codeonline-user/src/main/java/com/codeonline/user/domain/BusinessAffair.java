@@ -1,10 +1,12 @@
 package com.codeonline.user.domain;
 
+
 import com.codeonline.common.core.web.domain.BaseEntity;
 
+
 /*
-* 统一的事务类
-* */
+ * 统一的事务类
+ * */
 public class BusinessAffair extends BaseEntity {
     private Long affairId;//事务id
 
@@ -15,6 +17,8 @@ public class BusinessAffair extends BaseEntity {
 
     private String affairPeopleName;// 事务人姓名
 
+    private String content;// 事务内容
+
 
     private String affairType;// 事务类型
 
@@ -22,6 +26,14 @@ public class BusinessAffair extends BaseEntity {
     private String affairStatus;// 事务状态
 
     private String reply;// 事务回复
+
+    public String getContent() {
+        return content;
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+    }
 
     public String getReply() {
         return reply;

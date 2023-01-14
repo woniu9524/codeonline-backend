@@ -60,6 +60,10 @@ public interface K8sMapper {
     @Insert("insert into k8s_user_and_deploy_relation(user_id,teacher_id,lab_id,deploy_namespace,deployment_name,service_name,create_by,create_time,update_by,update_time) values (#{userId},#{teacherId},#{labId},#{deployNamespace},#{deploymentName},#{serviceName},#{createBy},sysdate(),#{updateBy},sysdate())")
     int insertK8sUserAndDeployRelation(K8sUserAndDeployRelation k8sUserAndDeployRelation);
 
-
+    /*
+    *  根据labId,userId查询k8s_user_and_deploy_relation
+    * */
+    @Select("select * from k8s_user_and_deploy_relation where lab_id=#{labId} and user_id=#{userId}")
+    K8sUserAndDeployRelation selectK8sUserAndDeployRelationByLabIdAndUserId(@Param("labId") String labId, @Param("userId") Long userId);
 
 }

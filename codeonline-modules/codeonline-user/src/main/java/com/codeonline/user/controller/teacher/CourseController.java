@@ -7,6 +7,7 @@ import com.codeonline.user.service.teacher.ICourseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -72,6 +73,24 @@ public class CourseController {
         return courseService.deleteCourses(courseIds);
     }
 
+    // 查询当前课程的所有学生
+    @GetMapping("/students/{courseId}")
+    public AjaxResult selectStudentsByCourseId(@PathVariable Long courseId){
+        return courseService.queryStudentsByCourseId(courseId);
+    }
+
+    // 添加学生到课程
+    @PostMapping("/students/{courseId}")
+    public AjaxResult addStudentsToCourse(@PathVariable Long courseId, @RequestBody String userName){
+
+        return courseService.addStudentToCourse(courseId, userName);
+    }
+
+    // 删除学生到课程
+    @DeleteMapping("/students/{courseId}/{studentId}")
+    public AjaxResult deleteStudentFromCourse(@PathVariable Long courseId, @PathVariable Long studentId){
+        return courseService.deleteStudentToCourse(courseId, studentId);
+    }
 
 
 

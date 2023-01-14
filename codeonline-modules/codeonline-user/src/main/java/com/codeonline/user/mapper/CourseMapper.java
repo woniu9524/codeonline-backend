@@ -1,6 +1,8 @@
 package com.codeonline.user.mapper;
 
+import com.codeonline.system.api.domain.SysUser;
 import com.codeonline.user.domain.Course;
+import com.codeonline.user.domain.CourseStudent;
 import org.apache.ibatis.annotations.*;
 
 import java.util.List;
@@ -37,6 +39,23 @@ public interface CourseMapper {
     // 批量删除课程
     @Delete("delete from business_course where id in (#{courseIds})")
     int deleteCourses(@Param("courseIds") String courseIds);
+
+    // 查询课程的所有学生，business_user_and_course_relation,sys_user
+    List<CourseStudent> queryStudentsByCourseId(@Param("courseId") Long courseId);
+
+    // 通过userName查询用户id
+    @Select("select user_id from sys_user where user_name = #{userName}")
+    Long queryUserIdByUserName(String userName);
+    // 查询学生是否已经在课程中
+    @Select("select count(*) from business_user_and_course_relation where user_id = #{userId} and course_id = #{courseId}")
+    int queryStudentIsInCourse(@Param("userId") Long userId, @Param("courseId") Long courseId);
+    // 添加学生到课程中
+    @Insert("insert into business_user_and_course_relation(user_id,course_id,create_time,create_by,update_time,update_by) values(#{userId},#{courseId},sysdate(),#{createBy},sysdate(),#{updateBy})")
+    int addStudentToCourse(@Param("userId") Long userId, @Param("courseId") Long courseId, @Param("createBy") String createBy, @Param("updateBy") String updateBy);
+    // 删除学生
+    @Delete("delete from business_user_and_course_relation where user_id = #{userId} and course_id = #{courseId}")
+    int deleteStudentFromCourse(@Param("userId") Long userId, @Param("courseId") Long courseId);
+
 
 
 }

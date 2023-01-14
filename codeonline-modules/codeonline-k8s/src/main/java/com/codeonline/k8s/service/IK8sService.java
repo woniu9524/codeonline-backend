@@ -20,4 +20,8 @@ public interface IK8sService {
 
     // 根据labId更新k8s配置信息
     AjaxResult updateK8sConfigureByLabId(K8sConfigureVo k8sConfigureVo);
+
+    // 查询个人实验情况
+    AjaxResult queryLabSituationByUserId(Long userId, String labId);
+
 }

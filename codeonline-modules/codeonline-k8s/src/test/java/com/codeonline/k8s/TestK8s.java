@@ -177,29 +177,7 @@ public class TestK8s {
 
     @Test
     public void service() throws IOException {
-        // 读取配置文件
-        String k8sConfigureJsonString = k8sMapper.selectK8sConfigureByLabId("1-5464146515");
-        // 将json字符串转换为k8sConfigure
-        K8sConfigure k8sConfigure = new Gson().fromJson(k8sConfigureJsonString,K8sConfigure.class);
 
-        // 读取teacherId
-        Long teacherId = k8sMapper.selectUserIdByLabId("1-5464146515");
-        // 读取userId
-        Long studentId = 1L;
-        // 获取NodePorts
-        List<Map<String,Integer>> ports=new ArrayList<>();
-        for (Map<String, String> portMap : k8sConfigure.getPorts()) {
-            Map<String,Integer> port=new HashMap<>();
-            if (portMap.get("service").equals("http")||portMap.get("service").equals("ssh")){
-                port.put("nodePort",k8sUtil.readNodePortCanUse());
-            }
-            port.put("port", Integer.valueOf(portMap.get("port")));
-            port.put("targetPort", Integer.valueOf(portMap.get("targetPort")));
-            ports.add(port);
-        }
-        // 创建service
-        K8sService k8sService = new K8sService(k8sConfigure,"1-5464146515",String.valueOf(teacherId),String.valueOf(studentId),ports);
-        k8sService.populate();
     }
 
 

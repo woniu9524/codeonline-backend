@@ -46,4 +46,15 @@ public class K8sController {
     public AjaxResult updateK8sConfigureByLabId(@RequestBody K8sConfigureVo k8sConfigureVo){
         return k8sService.updateK8sConfigureByLabId(k8sConfigureVo);
     }
+
+    /*
+    *  启动k8s实验环境
+    * */
+    @Log(title = "k8s控制",businessType = BusinessType.INSERT)
+    @GetMapping("/labStart/{labId}")
+    public AjaxResult labStart(@PathVariable String labId){
+        Long userId = SecurityUtils.getUserId();
+        return k8sService.queryLabSituationByUserId(userId,labId);
+    }
+
 }

@@ -87,10 +87,12 @@ public class K8sDeployment {
     private void populateEnvVars() {
         for (int i = 0; i < k8sConfigure.getEnvs().size(); i++) {
             Map<String, String> env = k8sConfigure.getEnvs().get(i);
-            EnvVar envVar = new EnvVar();
-            envVar.setName(env.get("key"));
-            envVar.setValue(env.get("value"));
-            envVars.add(envVar);
+            if (!env.isEmpty()) {
+                EnvVar envVar = new EnvVar();
+                envVar.setName(env.get("key"));
+                envVar.setValue(env.get("value"));
+                envVars.add(envVar);
+            }
         }
     }
 
@@ -119,6 +121,10 @@ public class K8sDeployment {
         container.setEnv(envVars);
         if (!StringUtils.isEmpty(k8sConfigure.getStartCmd())) {
             container.setCommand(Collections.singletonList(k8sConfigure.getStartCmd()));
+            if(!StringUtils.isEmpty(k8sConfigure.getStartArgs())){
+                String[] split = k8sConfigure.getStartArgs().split("，|,| ");
+                container.setArgs(Arrays.asList(split));
+            }
         }
         container.setSecurityContext(new SecurityContextBuilder().withPrivileged(k8sConfigure.isPrivilege()).build());
         container.setVolumeMounts(volumeMounts);

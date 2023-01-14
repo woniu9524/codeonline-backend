@@ -26,6 +26,8 @@ public class K8sConfigure{
 
     private String startCmd;// 启动命令
 
+    private String startArgs;// 启动参数
+
     private List<Map<String,String>> envs;// 环境变量
 
     private String volume;//挂载目录

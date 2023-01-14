@@ -28,4 +28,13 @@ public interface ICourseService {
     // 批量删除课程
     AjaxResult deleteCourses(List<String> courseIds);
 
+    // 查询课程的所有学生
+    AjaxResult queryStudentsByCourseId(Long courseId);
+
+    // 添加一个学生到课程
+    AjaxResult addStudentToCourse(Long courseId, String userName);
+
+    // 删除一个学生到课程
+    AjaxResult deleteStudentToCourse(Long courseId, Long studentId);
+
 }

@@ -11,6 +11,7 @@ import com.codeonline.k8s.model.vo.K8sConfigureVo;
 import com.codeonline.k8s.service.IK8sService;
 import com.codeonline.k8s.shell.ShellMan;
 import com.codeonline.k8s.utils.K8sUtil;
+import io.fabric8.kubernetes.api.model.ServicePort;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -44,6 +45,9 @@ public class K8sServiceImpl implements IK8sService {
     private String nfsServer;
     @Value("${nfs.path}")
     private String nfsPath;
+
+    @Value("${masterIp}")
+    private String masterIp;
 
     @Autowired
     private K8sMapper k8sMapper;
@@ -80,15 +84,21 @@ public class K8sServiceImpl implements IK8sService {
 
     @Override
     public AjaxResult createK8sDeploy(String labId) throws IOException {
-        // 读取配置文件
-        String k8sConfigureJsonString = k8sMapper.selectK8sConfigureByLabId(labId);
-        // 将json字符串转换为k8sConfigure
-        K8sConfigure k8sConfigure = new Gson().fromJson(k8sConfigureJsonString,K8sConfigure.class);
+
         // 读取teacherId
         Long teacherId = k8sMapper.selectUserIdByLabId(labId);
         // 读取userId
         Long studentId = SecurityUtils.getUserId();
         String studentName = SecurityUtils.getUsername();
+        K8sUserAndDeployRelation relation = k8sMapper.selectK8sUserAndDeployRelationByLabIdAndUserId(labId, studentId);
+        if (relation != null){
+            return AjaxResult.error("已经创建过了");
+        }
+        // 读取配置文件
+        String k8sConfigureJsonString = k8sMapper.selectK8sConfigureByLabId(labId);
+        // 将json字符串转换为k8sConfigure
+        K8sConfigure k8sConfigure = new Gson().fromJson(k8sConfigureJsonString,K8sConfigure.class);
+
         // 创建k8s部署
         Deployment deployment = k8sUtil.createDeployment(populateDeployment(k8sConfigure, labId, teacherId, studentId));
         if(deployment==null){
@@ -142,6 +152,47 @@ public class K8sServiceImpl implements IK8sService {
         return AjaxResult.error();
     }
 
+    @Override
+    public AjaxResult queryLabSituationByUserId(Long userId, String labId) {
+        K8sUserAndDeployRelation k8sUserAndDeployRelation = k8sMapper.selectK8sUserAndDeployRelationByLabIdAndUserId(labId, userId);
+        if (k8sUserAndDeployRelation == null){
+            return AjaxResult.error("未创建，请先创建");
+        }
+//        // 读取配置文件
+        String k8sConfigureJsonString = k8sMapper.selectK8sConfigureByLabId(labId);
+//        // 将json字符串转换为k8sConfigure
+        K8sConfigure k8sConfigure = new Gson().fromJson(k8sConfigureJsonString,K8sConfigure.class);
+        // 读取service
+        io.fabric8.kubernetes.api.model.Service service = k8sUtil.getService(k8sUserAndDeployRelation.getServiceName());
+        // 读取servicePort
+        List<ServicePort> servicePorts = k8sUtil.getServicePort(k8sUserAndDeployRelation.getServiceName());
+        // 生成端口映射
+        List<Map<String,Object>> maps = new ArrayList<>();
+        for (ServicePort servicePort : servicePorts) {
+            Map<String,Object> map = new HashMap<>();
+            Integer port = servicePort.getPort();
+            Integer targetPort = servicePort.getTargetPort().getIntVal();
+            Integer nodePort = servicePort.getNodePort();
+            List<Map<String, String>> ports = k8sConfigure.getPorts();
+            for (Map<String, String> portMap : ports) {
+                if (port.toString().equals(portMap.get("port")) && targetPort.toString().equals(portMap.get("targetPort"))){
+                    map.put("port",port);
+                    map.put("targetPort",targetPort);
+                    map.put("nodePort",nodePort);
+                    map.put("service",portMap.get("service"));
+                    if("vscode".equals(portMap.get("service"))||"http".equals(portMap.get("service"))){
+                        map.put("url","http://"+masterIp+":"+nodePort);
+                    }else if("jupyter".equals(portMap.get("service"))){
+                        map.put("url","http://"+masterIp+":"+nodePort+"/lab");
+                    }
+                    maps.add(map);
+                }
+            }
+        }
+
+        return AjaxResult.success(maps);
+    }
+
     public Deployment populateDeployment(K8sConfigure k8sConfigure, String labId, Long teacherId, Long studentId) throws IOException {
         // 修改imageName
         if("harbor".equals(k8sConfigure.getSourceFrom())){
@@ -163,7 +214,7 @@ public class K8sServiceImpl implements IK8sService {
         List<Map<String,Integer>> ports=new ArrayList<>();
         for (Map<String, String> portMap : k8sConfigure.getPorts()) {
             Map<String,Integer> port=new HashMap<>();
-            if ("http".equals(portMap.get("service"))||"ssh".equals(portMap.get("service"))||"other".equals(portMap.get("service"))){
+            if (!"no".equals(portMap.get("service"))){
                 port.put("nodePort",k8sUtil.readNodePortCanUse());
             }
             port.put("port", Integer.valueOf(portMap.get("port")));
