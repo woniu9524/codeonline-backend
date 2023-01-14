@@ -20,9 +20,7 @@ spec:
       nodePort: 31620
   selector:
     app: codeonlie-visual-monitor
-  clusterIP: 10.233.49.62
-  clusterIPs:
-    - 10.233.49.62
+
   type: NodePort
   sessionAffinity: None
   externalTrafficPolicy: Cluster

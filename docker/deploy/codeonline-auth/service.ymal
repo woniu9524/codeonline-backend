@@ -17,9 +17,6 @@ spec:
       targetPort: 8080
   selector:
     app: codeonline-auth
-  clusterIP: 10.233.14.206
-  clusterIPs:
-    - 10.233.14.206
   type: ClusterIP
   sessionAffinity: None
   ipFamilies:
