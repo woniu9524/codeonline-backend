@@ -1,7 +1,6 @@
 package com.codeonline.k8s;
 
 
-
 import com.alibaba.nacos.shaded.com.google.gson.Gson;
 import com.codeonline.common.core.constant.K8sConstants;
 import com.codeonline.common.core.utils.StringUtils;
@@ -26,14 +25,20 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 
-@SpringBootTest(classes= CodeOnlineK8sApplication.class)
+@SpringBootTest(classes = CodeOnlineK8sApplication.class)
 public class TestK8s {
 
     @Autowired
@@ -41,7 +46,7 @@ public class TestK8s {
 
     @Test
     public void k8sTest() throws IOException {
-        KubernetesClient client= new KubernetesClientBuilder().build();
+        KubernetesClient client = new KubernetesClientBuilder().build();
 
         //创建container
         Container container = new Container();
@@ -56,7 +61,7 @@ public class TestK8s {
         container.setPorts(containerPorts);
         container.setImagePullPolicy("IfNotPresent");
         //创建label
-        Map<String, String> labels=new HashMap<>();
+        Map<String, String> labels = new HashMap<>();
         labels.put("app", "test-deployment");
         labels.put("teacherID", "10001");
         labels.put("studentID", "20001");
@@ -98,9 +103,9 @@ public class TestK8s {
 
     @Test
     public void serviceTest() throws IOException {
-        KubernetesClient client= new KubernetesClientBuilder().build();
+        KubernetesClient client = new KubernetesClientBuilder().build();
         //创建label
-        Map<String, String> labels=new HashMap<>();
+        Map<String, String> labels = new HashMap<>();
         labels.put("app", "test-deployment");
         labels.put("teacherID", "10001");
         labels.put("studentID", "20001");
@@ -109,7 +114,7 @@ public class TestK8s {
         //创建Metadata
         ObjectMeta metadata = new ObjectMeta();
         metadata.setLabels(new HashMap<>());
-        metadata.getLabels().put("app","base-service");
+        metadata.getLabels().put("app", "base-service");
         metadata.setName("base-service");
         metadata.setNamespace("codeonline-all-pods");
         //创建service
@@ -151,27 +156,27 @@ public class TestK8s {
 
     @Test
     public void deploy() throws IOException {
-        String labId="1-5464146515";
+        String labId = "1-5464146515";
         // 读取配置文件
         String k8sConfigureJsonString = k8sMapper.selectK8sConfigureByLabId(labId);
         // 将json字符串转换为k8sConfigure
-        K8sConfigure k8sConfigure = new Gson().fromJson(k8sConfigureJsonString,K8sConfigure.class);
+        K8sConfigure k8sConfigure = new Gson().fromJson(k8sConfigureJsonString, K8sConfigure.class);
         // 读取teacherId
         Long teacherId = k8sMapper.selectUserIdByLabId(labId);
         // 读取userId
         Long studentId = 1L;
         // 修改imageName
-        if("harbor".equals(k8sConfigure.getSourceFrom())){
-            String imageName=k8sConfigure.getImageName();
-            k8sConfigure.setImageName(harborUrl+"/"+harborSpace+"/"+imageName);
+        if ("harbor".equals(k8sConfigure.getSourceFrom())) {
+            String imageName = k8sConfigure.getImageName();
+            k8sConfigure.setImageName(harborUrl + "/" + harborSpace + "/" + imageName);
         }
         // 提前创建nfs目录
-        String nfsPathNew = this.nfsPath + "/" + teacherId + "/" + labId+ "/" + studentId;
-        if(!StringUtils.isEmpty(k8sConfigure.getVolume())){
-            shellMan.exec("mkdir -p "+nfsPathNew);
+        String nfsPathNew = this.nfsPath + "/" + teacherId + "/" + labId + "/" + studentId;
+        if (!StringUtils.isEmpty(k8sConfigure.getVolume())) {
+            shellMan.exec("mkdir -p " + nfsPathNew);
         }
 
-        K8sDeployment k8sDeployment = new K8sDeployment(k8sConfigure,"1-5464146515",String.valueOf(teacherId),String.valueOf(studentId),nfsPathNew,nfsServer);
+        K8sDeployment k8sDeployment = new K8sDeployment(k8sConfigure, "1-5464146515", String.valueOf(teacherId), String.valueOf(studentId), nfsPathNew, nfsServer);
         k8sDeployment.populate();
     }
 
@@ -185,4 +190,37 @@ public class TestK8s {
     public void K8sUtilTest() {
         System.out.println(k8sUtil.listNamespace());
     }
+
+    @Test
+    public void fileList() {
+        String path = "G:\\nacos-server-2.1.2\\nacos\\bin";
+        List<Map<String, Object>> fileTree = new ArrayList<>();
+        showList(new File(path), fileTree);
+        fileTree= (List<Map<String, Object>>) fileTree.get(0).get("children");
+        System.out.println(fileTree);
+
+    }
+
+    private void showList(File file, List<Map<String, Object>> fileTree) {
+        Map<String, Object> map = new HashMap<>();
+        if (file.isDirectory()) {//如果是目录
+            map.put("text", file.getName());
+            map.put("path", file.getPath());
+            List<Map<String, Object>> childTree = new ArrayList<>();
+            System.out.println("文件夹:" + file.getPath());
+            File[] listFiles = file.listFiles();//获取当前路径下的所有文件和目录,返回File对象数组
+            for (File f : listFiles) {//将目录内的内容对象化并遍历
+                showList(f, childTree);
+            }
+            map.put("children", childTree);
+            fileTree.add(map);
+        } else if (file.isFile()) {//如果是文件
+            map.put("text", file.getName());
+            map.put("path", file.getPath());
+            System.out.println("文件:" + file.getPath());
+            fileTree.add(map);
+        }
+    }
+
+
 }
